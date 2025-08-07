@@ -1,13 +1,15 @@
 {
   "configurations": [
     {
-      "name": "Linux",
-      "includePath": ["${workspaceFolder}/**"],
+      "name": "windows-clang-x64",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
       "defines": [],
       "compilerPath": "/usr/bin/mpic++",
       "cStandard": "c17",
       "cppStandard": "c++17",
-      "intelliSenseMode": "linux-gcc-x64"
+      "intelliSenseMode": "windows-clang-x64"
     }
   ],
   "version": 4

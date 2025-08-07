@@ -54,26 +54,41 @@ void walker_process()
     // Seed the random number generator.
     // Using rank ensures each walker gets a different sequence of random numbers.
     srand(time(NULL) + world_rank);
+    int position = 0;
+    int steps = 0;
 
-    // TODO: Implement the random walk logic for a walker process.
-    // 1. Initialize the walker's position to 0.
-    // 2. Loop for a maximum of `max_steps`.
-    // 3. In each step, randomly move left (-1) or right (+1).
-    // 4. Check if the walker has moved outside the domain [-domain_size, +domain_size].
-    // 5. If the walk is finished (either out of bounds or max_steps reached):
-    //    a. Print a message including the keyword "finished". For example:
-    //       "Rank X: Walker finished in Y steps."
-    //    b. Send an integer message to the controller (rank 0) to signal completion.
-    //    c. Break the loop.
+    while (steps < max_steps)
+    {
+        int move = (rand() % 2 == 0) ? -1 : 1;
+        position += move;
+        steps++;
+
+        if (position < -domain_size || position > domain_size)
+        {
+            std::cout << "Rank " << world_rank << ": Walker finished in " << steps << " steps." << std::endl;
+            int done_msg = 1;
+            MPI_Send(&done_msg, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+            return;
+        }
+    }
+
+    std::cout << "Rank " << world_rank << ": Walker finished in " << steps << " steps." << std::endl;
+    int done_msg = 1;
+    MPI_Send(&done_msg, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
 }
 
 void controller_process()
 {
-    // TODO: Implement the logic for the controller process.
-    // 1. Determine the number of walkers (world_size - 1).
-    // 2. Loop that many times to receive a message from each walker.
-    // 3. Use MPI_Recv to wait for a message. Use MPI_ANY_SOURCE to accept
-    //    a message from any walker that finishes.
-    // 4. After receiving messages from all walkers, print a final summary message.
-    //    For example: "Controller: All X walkers have finished."
+    int total_walkers = world_size - 1;
+    int done_count = 0;
+    int dummy;
+    MPI_Status status;
+
+    while (done_count < total_walkers)
+    {
+        MPI_Recv(&dummy, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+        done_count++;
+    }
+
+    std::cout << "Controller: All " << total_walkers << " walkers have finished." << std::endl;
 }
